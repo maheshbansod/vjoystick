@@ -14,7 +14,7 @@ function init() {
 	}
 	canvas.width = width;
 	canvas.height = height;
-	const joystickDraggableMax = 100;
+	const joystickDraggableMax = 120;
 
 	const ctx = /** @type {CanvasRenderingContext2D} */(canvas.getContext('2d'));
 	if (!ctx) {
@@ -291,6 +291,10 @@ function init() {
 			x: center.x + xperc * draggableMax,
 			y: center.y + yperc * draggableMax
 		};
+		const previousFillStyle = ctx.fillStyle;
+		ctx.fillStyle = 'rgb(255,255,255)';
+		fillCircle(draggableCenter.x, draggableCenter.y, draggableRadius);
+		ctx.fillStyle = previousFillStyle;
 		strokeCircle(draggableCenter.x, draggableCenter.y, draggableRadius);
 	}
 
@@ -303,6 +307,17 @@ function init() {
 		ctx.beginPath();
 		ctx.arc(x, y, radius, 0, 2 * Math.PI);
 		ctx.stroke();
+	}
+
+	/**
+	 * @param {number} x
+	 * @param {number} y
+	 * @param {number} radius
+	 */
+	function fillCircle(x, y, radius) {
+		ctx.beginPath();
+		ctx.arc(x, y, radius, 0, 2 * Math.PI);
+		ctx.fill();
 	}
 }
 
