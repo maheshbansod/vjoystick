@@ -124,12 +124,12 @@ function init() {
 		state.playerState.position.x = px;
 		state.playerState.position.y = py;
 	}
-	canvas.addEventListener('mousedown', e => {
+	canvas.addEventListener('pointerdown', e => {
 		const x = e.offsetX;
 		const y = e.offsetY;
 		state.dragState.dragStart = { x, y };
 	});
-	canvas.addEventListener('mouseup', e => {
+	canvas.addEventListener('pointerup', e => {
 		const x = e.offsetX;
 		const y = e.offsetY;
 		if (state.dragState.dragStart) {
@@ -138,7 +138,7 @@ function init() {
 		}
 	});
 
-	canvas.addEventListener('mousemove', e => {
+	canvas.addEventListener('pointermove', e => {
 		const x = e.offsetX;
 		const y = e.offsetY;
 		if (state.dragState.dragStart) {
