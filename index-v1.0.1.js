@@ -66,8 +66,8 @@ function init() {
 	function draw() {
 		ctx.clearRect(0, 0, width, height);
 		drawMap();
-		drawPlayer();
 		drawJoystick();
+		drawPlayer();
 	}
 
 	function drawMap() {
