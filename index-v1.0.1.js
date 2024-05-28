@@ -110,13 +110,13 @@ function init() {
 		px += vx * dt;
 		py += vy * dt;
 		const pMargin = 10;
-		if (px > bounds.right - pMargin) {
-			px = bounds.right - pMargin;
+		if (px > bounds.right - playerSize - pMargin) {
+			px = bounds.right - pMargin - playerSize;
 		} else if (px < bounds.left + pMargin) {
 			px = bounds.left + pMargin;
 		}
-		if (py > bounds.bottom - pMargin) {
-			py = bounds.bottom - pMargin;
+		if (py > bounds.bottom - playerSize - pMargin) {
+			py = bounds.bottom - pMargin - playerSize;
 		} else if (py < bounds.top + pMargin) {
 			py = bounds.top + pMargin;
 		}
