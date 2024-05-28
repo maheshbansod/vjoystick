@@ -79,6 +79,36 @@ function init() {
 	const playerSize = 10;
 	function drawPlayer() {
 		ctx.fillRect(state.playerState.position.x, state.playerState.position.y, playerSize, playerSize);
+
+		/**
+		 * @param {number} n
+		 * */
+		const prevPos = (n) => {
+			const d = 10;
+			return {
+				x: state.playerState.position.x - state.playerState.velocity.x * n * d,
+				y: state.playerState.position.y - state.playerState.velocity.y * n * d,
+			}
+		};
+		/** @param {number} n */
+		const noise = (n = playerSize) => {
+			return n * Math.random();
+		}
+
+		if (state.playerState.velocity.x === 0 && state.playerState.velocity.y === 0) {
+			return;
+		}
+		// some dots for fun i guess
+		const prevFillStyle = ctx.fillStyle;
+		for (let i = 1; i <= 40; i++) {
+			const pos = prevPos(i);
+			pos.x += noise();
+			pos.y += noise();
+			const dotSize = 2;
+			ctx.fillStyle = `rgb(${127 + noise(127)}, ${noise(255)}, ${noise(255)})`;
+			ctx.fillRect(pos.x, pos.y, dotSize, dotSize);
+		}
+		ctx.fillStyle = prevFillStyle;
 	}
 
 	let previousTime = Date.now();
