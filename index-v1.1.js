@@ -15,6 +15,7 @@ function init() {
 	canvas.width = width;
 	canvas.height = height;
 	const joystickDraggableMax = 120;
+	const maxParticles = 500;
 
 	const ctx = /** @type {CanvasRenderingContext2D} */(canvas.getContext('2d'));
 	if (!ctx) {
@@ -30,6 +31,7 @@ function init() {
 	};
 
 	/**
+	 * @typedef {{position: Pair, lifetime: number, velocity: Pair, color: string, size: number}} ParticleData
 	 * @typedef {{x: number, y: number, width: number, height: number}} Bounds
 	 * @type {{
 	 *	joyStickState: {x: number, y: number, ui?: {
@@ -41,6 +43,9 @@ function init() {
 	 *	playerState: {
 	 *		velocity: Pair,
 	 *		position: Pair
+	 *	},
+	 *	particles: {
+	 *		p: ParticleData[]
 	 *	}
 	 * }}
 	 */
@@ -60,6 +65,9 @@ function init() {
 				x: (bounds.left + bounds.right) / 2,
 				y: (bounds.top + bounds.bottom) / 2,
 			}
+		},
+		particles: {
+			p: []
 		}
 	};
 
@@ -67,7 +75,19 @@ function init() {
 		ctx.clearRect(0, 0, width, height);
 		drawMap();
 		drawJoystick();
+		drawParticles();
 		drawPlayer();
+	}
+
+	function drawParticles() {
+		for (const particle of state.particles.p) {
+			const { x, y } = particle.position;
+			const { color, size } = particle;
+			const prevFillStyle = ctx.fillStyle;
+			ctx.fillStyle = color;
+			fillCircle(x, y, size / 2);
+			ctx.fillStyle = prevFillStyle;
+		}
 	}
 
 	function drawMap() {
@@ -76,39 +96,17 @@ function init() {
 		ctx.strokeRect(bounds.top, bounds.left, w, h);
 	}
 
-	const playerSize = 10;
+	const playerSize = 30;
 	function drawPlayer() {
-		ctx.fillRect(state.playerState.position.x, state.playerState.position.y, playerSize, playerSize);
-
-		/**
-		 * @param {number} n
-		 * */
-		const prevPos = (n) => {
-			const d = 10;
-			return {
-				x: state.playerState.position.x - state.playerState.velocity.x * n * d,
-				y: state.playerState.position.y - state.playerState.velocity.y * n * d,
-			}
+		const fillStyle = ctx.fillStyle;
+		ctx.fillStyle = 'rgb(255, 255, 255)';
+		const { x, y } = state.playerState.position;
+		const center = {
+			x: x + playerSize / 2,
+			y: y + playerSize / 2,
 		};
-		/** @param {number} n */
-		const noise = (n = playerSize) => {
-			return n * Math.random();
-		}
-
-		if (state.playerState.velocity.x === 0 && state.playerState.velocity.y === 0) {
-			return;
-		}
-		// some dots for fun i guess
-		const prevFillStyle = ctx.fillStyle;
-		for (let i = 1; i <= 40; i++) {
-			const pos = prevPos(i);
-			pos.x += noise();
-			pos.y += noise();
-			const dotSize = 2;
-			ctx.fillStyle = `rgb(${127 + noise(127)}, ${noise(255)}, ${noise(255)})`;
-			ctx.fillRect(pos.x, pos.y, dotSize, dotSize);
-		}
-		ctx.fillStyle = prevFillStyle;
+		fillCircle(center.x, center.y, playerSize / 2);
+		ctx.fillStyle = fillStyle;
 	}
 
 	let previousTime = Date.now();
@@ -126,6 +124,7 @@ function init() {
 	 * */
 	function updateState(dt) {
 		updatePlayerState(dt);
+		updateParticles(dt);
 	}
 
 	/**
@@ -137,6 +136,7 @@ function init() {
 
 		const { x: vx, y: vy } = state.playerState.velocity;
 		let { x: px, y: py } = state.playerState.position;
+		const lastPos = { x: px, y: py };
 		px += vx * dt;
 		py += vy * dt;
 		const pMargin = 10;
@@ -153,6 +153,61 @@ function init() {
 
 		state.playerState.position.x = px;
 		state.playerState.position.y = py;
+
+		const posDiff = { x: px - lastPos.x, y: py - lastPos.y };
+
+		/**
+		 * @param {number} n
+		 * */
+		const prevPos = (n) => {
+			const d = 0.8;
+			return {
+				x: state.playerState.position.x - posDiff.x * n * d,
+				y: state.playerState.position.y - posDiff.y * n * d,
+			}
+		};
+		/** @param {number} n */
+		const noise = (n) => {
+			return n * Math.random();
+		}
+
+		if (vx !== 0 || vy !== 0) {
+			for (let i = 1; i <= 10; i++) {
+				const pos = prevPos(i);
+				const posNoiseMax = (2 * i - i * playerSize + 10 * playerSize - 2) / 9;
+				pos.x += noise(posNoiseMax);
+				pos.y += noise(posNoiseMax);
+				const dotSize = noise(10);
+				const color = `rgb(${noise(255)}, ${noise(255)}, ${200 + noise(55)})`;
+				if (state.particles.p.length < maxParticles) {
+					state.particles.p.push({
+						position: pos,
+						velocity: { x: 0, y: 0 },
+						lifetime: 300,
+						color,
+						size: dotSize
+					});
+				}
+			}
+		}
+	}
+	/** @param {number} dt */
+	function updateParticles(dt) {
+		const markForDeletion = [];
+		for (const particle of state.particles.p) {
+			particle.lifetime -= dt;
+			if (particle.lifetime <= 0) {
+				markForDeletion.push(particle);
+				continue;
+			}
+
+			const x = particle.position.x + particle.velocity.x * dt;
+			const y = particle.position.y + particle.velocity.y * dt;
+
+			particle.position.x = x;
+			particle.position.y = y;
+		}
+		state.particles.p = state.particles.p.filter(p => !markForDeletion.includes(p));
 	}
 	canvas.addEventListener('pointerdown', e => {
 		const x = e.offsetX;
@@ -306,6 +361,8 @@ function init() {
 
 	function drawJoystick() {
 		const { radius, center, innerRadius } = getJoystickInitialConfiguration();
+
+		ctx.strokeStyle = 'rgb(200, 200, 200)';
 
 
 		// joystick base
