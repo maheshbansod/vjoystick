@@ -408,7 +408,7 @@ function init() {
 		});
 		const portraitCenter = () => ({
 			x: width / 2,
-			y: height / 2
+			y: height - radius - margin
 		});
 		const center = width > height ? landscapeCenter() : portraitCenter();
 

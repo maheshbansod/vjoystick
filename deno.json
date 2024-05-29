@@ -1,0 +1,5 @@
+{
+  "tasks": {
+    "update-version": "deno run -A update-version.ts"
+  }
+}
