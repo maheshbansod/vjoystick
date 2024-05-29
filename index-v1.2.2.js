@@ -402,10 +402,15 @@ function init() {
 		const radius = 100;
 		const innerRadius = radius / 2;
 		const margin = joystickDraggableMax - radius + innerRadius;
-		const center = {
+		const landscapeCenter = () => ({
 			x: radius + margin,
 			y: height - radius - margin
-		};
+		});
+		const portraitCenter = () => ({
+			x: width / 2,
+			y: height / 2
+		});
+		const center = width > height ? landscapeCenter() : portraitCenter();
 
 		return {
 			radius,
