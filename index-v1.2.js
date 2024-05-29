@@ -32,6 +32,7 @@ function init() {
 
 	/**
 	 * @typedef {{position: Pair, lifetime: number, velocity: Pair, color: string, size: number}} ParticleData
+	 * @typedef {{position: Pair, distance: number, intensity: number, size: number, r: number}} StarData
 	 * @typedef {{x: number, y: number, width: number, height: number}} Bounds
 	 * @type {{
 	 *	joyStickState: {x: number, y: number, ui?: {
@@ -46,6 +47,9 @@ function init() {
 	 *	},
 	 *	particles: {
 	 *		p: ParticleData[]
+	 *	},
+	 *	stars: {
+	 *		p: StarData[]
 	 *	}
 	 * }}
 	 */
@@ -68,15 +72,56 @@ function init() {
 		},
 		particles: {
 			p: []
+		},
+		stars: {
+			p: []
 		}
 	};
+
+	function initStars() {
+		const n = 10;
+		for (let i = 1; i <= n; i++) {
+			/** @type {StarData} */
+			const star = {
+				position: randomPosition(),
+				distance: randomDistance(),
+				size: randomSize(),
+				intensity: Math.random(),
+				r: randomSpikes()
+			};
+			state.stars.p.push(star);
+		}
+		function randomSpikes() {
+			return Math.floor(4 + Math.random() * 3);
+		}
+		function randomSize() {
+			return 5 + Math.random() * 10;
+		}
+		function randomDistance() {
+			return Math.random() * 5;
+		}
+		function randomPosition() {
+			return {
+				x: Math.random() * width,
+				y: Math.random() * height
+			}
+		}
+	}
+	initStars();
 
 	function draw() {
 		ctx.clearRect(0, 0, width, height);
 		drawMap();
+		drawStars();
 		drawJoystick();
 		drawParticles();
 		drawPlayer();
+	}
+
+	function drawStars() {
+		for (const star of state.stars.p) {
+			drawStar(star);
+		}
 	}
 
 	function drawParticles() {
@@ -94,6 +139,40 @@ function init() {
 		const w = bounds.right - bounds.left;
 		const h = bounds.bottom - bounds.top;
 		ctx.strokeRect(bounds.top, bounds.left, w, h);
+	}
+
+	/** @param {StarData} star */
+	function drawStar(star) {
+		const { x: cx, y: cy } = star.position;
+		const spikes = star.r;
+		const distance = star.distance;
+		const outerRadius = star.size / 2 * distance;
+		const innerRadius = star.size / 4 * distance;
+		var rot = Math.PI / 2 * 3;
+		var x = cx;
+		var y = cy;
+		var step = Math.PI / spikes;
+
+		ctx.beginPath();
+		ctx.moveTo(cx, cy - outerRadius)
+		for (let i = 0; i < spikes; i++) {
+			x = cx + Math.cos(rot) * outerRadius;
+			y = cy + Math.sin(rot) * outerRadius;
+			ctx.lineTo(x, y)
+			rot += step
+
+			x = cx + Math.cos(rot) * innerRadius;
+			y = cy + Math.sin(rot) * innerRadius;
+			ctx.lineTo(x, y)
+			rot += step
+		}
+		ctx.lineTo(cx, cy - outerRadius);
+		ctx.closePath();
+		ctx.lineWidth = 5;
+		ctx.strokeStyle = 'blue';
+		ctx.stroke();
+		ctx.fillStyle = 'skyblue';
+		ctx.fill();
 	}
 
 	const playerSize = 30;
@@ -125,6 +204,17 @@ function init() {
 	function updateState(dt) {
 		updatePlayerState(dt);
 		updateParticles(dt);
+		updateStars(dt);
+	}
+
+	/** @param {number} dt */
+	function updateStars(dt) {
+		for (const star of state.stars.p) {
+			let { x: _px, y: py } = star.position;
+			py += star.distance * dt / 100;
+			py = py % height;
+			star.position.y = py;
+		}
 	}
 
 	/**
