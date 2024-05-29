@@ -23,6 +23,7 @@ function init() {
 	}
 
 	const playMargin = 10;
+	const velocityVelocity = 10;
 	const bounds = {
 		left: playMargin,
 		top: playMargin,
@@ -224,8 +225,26 @@ function init() {
 	 * @param {number} dt
 	 * */
 	function updatePlayerState(dt) {
-		state.playerState.velocity.x = state.joyStickState.x;
-		state.playerState.velocity.y = state.joyStickState.y;
+
+		/**
+		 * @param {number} a
+		 * @param {number} b
+		 * */
+		const reach = (a, b) => {
+			const step = velocityVelocity * dt / 10000;
+			if ((a > b && a - b < step) || (b > a && b - a < step)) {
+				return b;
+			}
+			if (a > b) {
+				return a - step;
+			} else if (a < b) {
+				return a + step;
+			}
+			return b;
+		}
+
+		state.playerState.velocity.x = reach(state.playerState.velocity.x, state.joyStickState.x);
+		state.playerState.velocity.y = reach(state.playerState.velocity.y, state.joyStickState.y);
 
 		const { x: vx, y: vy } = state.playerState.velocity;
 		let { x: px, y: py } = state.playerState.position;
