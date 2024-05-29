@@ -91,6 +91,9 @@ function init() {
 			};
 			state.stars.p.push(star);
 		}
+
+		state.stars.p.sort((a, b) => a.distance - b.distance);
+
 		function randomSpikes() {
 			return Math.floor(4 + Math.random() * 3);
 		}
