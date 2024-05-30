@@ -305,9 +305,14 @@ function init() {
      */
     const prevPos = (n) => {
       const d = 0.8;
+      const center = {
+        x: state.playerState.position.x + playerSize / 2,
+        y: state.playerState.position.y + playerSize / 2,
+      };
+      const { velocity } = state.playerState;
       return {
-        x: state.playerState.position.x - posDiff.x * n * d,
-        y: state.playerState.position.y - posDiff.y * n * d,
+        x: center.x - velocity.x * n * d,
+        y: center.y - velocity.y * n * d,
       };
     };
     /** @param {number} n */
@@ -317,10 +322,11 @@ function init() {
 
     if (vx !== 0 || vy !== 0) {
       for (let i = 1; i <= 10; i++) {
-        const pos = prevPos(i);
-        const posNoiseMax = (2 * i - i * playerSize + 10 * playerSize - 2) / 9;
-        pos.x += noise(posNoiseMax);
-        pos.y += noise(posNoiseMax);
+        const pos = prevPos(i * 10);
+        const m = playerSize;
+        const posNoiseMax = (2 * i - i * m + 10 * m - 2) / 9;
+        pos.x += noise(posNoiseMax) - posNoiseMax / 2;
+        pos.y += noise(posNoiseMax) - posNoiseMax / 2;
         const dotSize = noise(10);
         const color = `rgb(${noise(255)}, ${noise(255)}, ${200 + noise(55)})`;
         if (state.particles.p.length < maxParticles) {
