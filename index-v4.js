@@ -51,6 +51,9 @@ function init() {
    * 	},
    * 	stars: {
    * 		p: StarData[]
+   * 	},
+   * 	world: {
+   * 	  velocity: Pair
    * 	}
    * }}
    */
@@ -77,6 +80,9 @@ function init() {
     },
     stars: {
       p: [],
+    },
+    world: {
+      velocity: { x: 0, y: 0 },
     },
   };
 
@@ -210,14 +216,34 @@ function init() {
     updatePlayerState(dt);
     updateParticles(dt);
     updateStars(dt);
+    updateWorld(dt);
+  }
+
+  /** @param {number} _dt */
+  function updateWorld(_dt) {
+    const { x: pvx, y: pvy } = state.playerState.velocity;
+    if (pvx === 0 && pvy === 0) {
+      return;
+    }
+    state.world.velocity.x = -pvx / 2;
+    state.world.velocity.y = -pvy / 2;
   }
 
   /** @param {number} dt */
   function updateStars(dt) {
     for (const star of state.stars.p) {
-      let { x: _px, y: py } = star.position;
-      py += star.distance * dt / 100;
+      let { x: px, y: py } = star.position;
+      py += (star.distance) * dt / 100 + state.world.velocity.y * dt;
+      px += state.world.velocity.x * dt;
+      if (px < 0) {
+        px = width + px;
+      }
+      if (py < 0) {
+        py = height + py;
+      }
+      px = px % width;
       py = py % height;
+      star.position.x = px;
       star.position.y = py;
     }
   }
