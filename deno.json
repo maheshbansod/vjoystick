@@ -1,5 +1,10 @@
 {
   "tasks": {
     "update-version": "deno run -A update-version.ts"
+  },
+  "compilerOptions": {
+    "strict": true,
+    "noImplicitAny": true,
+    "noUncheckedIndexedAccess": true
   }
 }

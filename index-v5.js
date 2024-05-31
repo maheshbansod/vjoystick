@@ -1,4 +1,5 @@
 //@ts-check
+/// <reference lib="dom" />
 "use strict";
 
 function init() {
@@ -343,6 +344,7 @@ function init() {
   }
   /** @param {number} dt */
   function updateParticles(dt) {
+    /** @type {ParticleData[]} */
     const markForDeletion = [];
     for (const particle of state.particles.p) {
       particle.lifetime -= dt;
