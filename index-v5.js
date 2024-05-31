@@ -25,6 +25,7 @@ function init() {
 
   const playMargin = 10;
   const velocityVelocity = 10;
+  let rocketFuelBurnVelocity = {x: 0, y: 0};
   const bounds = {
     left: playMargin,
     top: playMargin,
@@ -284,15 +285,24 @@ function init() {
     px += vx * dt;
     py += vy * dt;
     const pMargin = 10;
+    /** @type {{x: boolean, y: boolean}} */
+    const throttledAxes = {
+      x: false,
+      y: false
+    }
     if (px > bounds.right - playerSize - pMargin) {
       px = bounds.right - pMargin - playerSize;
+      throttledAxes.x = true;
     } else if (px < bounds.left + pMargin) {
       px = bounds.left + pMargin;
+      throttledAxes.x = true;
     }
     if (py > bounds.bottom - playerSize - pMargin) {
       py = bounds.bottom - pMargin - playerSize;
+      throttledAxes.y = true;
     } else if (py < bounds.top + pMargin) {
       py = bounds.top + pMargin;
+      throttledAxes.y = true;
     }
 
     state.playerState.position.x = px;
@@ -319,10 +329,19 @@ function init() {
     };
 
     if (vx !== 0 || vy !== 0) {
-      for (let i = 1; i <= 10; i++) {
+      if (!throttledAxes.x && !throttledAxes.y && (rocketFuelBurnVelocity.x !== 0 || rocketFuelBurnVelocity.y !== 0)){
+        rocketFuelBurnVelocity = {
+          x: throttledAxes.x ? -vx : 0,
+          y: throttledAxes.y ? -vy : 0
+        };
+      }
+      rocketFuelBurnVelocity.x = throttledAxes.x ? -vx : 0;
+      rocketFuelBurnVelocity.y = throttledAxes.y ? -vy : 0;
+      const n = 10;
+      for (let i = 1; i <= n; i++) {
         const pos = prevPos(i * 10);
         const m = playerSize;
-        const posNoiseMax = (2 * i - i * m + 10 * m - 2) / 9;
+        const posNoiseMax = (2 * i - i * m + n * m - 2) / (n - 1);
         pos.x += noise(posNoiseMax) - posNoiseMax / 2;
         pos.y += noise(posNoiseMax) - posNoiseMax / 2;
         const dotSize = noise(10);
@@ -330,7 +349,7 @@ function init() {
         if (state.particles.p.length < maxParticles) {
           state.particles.p.push({
             position: pos,
-            velocity: { x: 0, y: 0 },
+            velocity: rocketFuelBurnVelocity,
             lifetime: 300,
             color,
             size: dotSize,
