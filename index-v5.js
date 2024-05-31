@@ -281,7 +281,6 @@ function init() {
 
     const { x: vx, y: vy } = state.playerState.velocity;
     let { x: px, y: py } = state.playerState.position;
-    const lastPos = { x: px, y: py };
     px += vx * dt;
     py += vy * dt;
     const pMargin = 10;
@@ -298,8 +297,6 @@ function init() {
 
     state.playerState.position.x = px;
     state.playerState.position.y = py;
-
-    const posDiff = { x: px - lastPos.x, y: py - lastPos.y };
 
     /**
      * @param {number} n
@@ -428,6 +425,7 @@ function init() {
      * @type {Pair|undefined}
      */
     let joystickPos;
+    // deno-lint-ignore no-cond-assign
     if (joystickPos = getJoystickPosDiff(dragStart, currentDragPos)) {
       state.joyStickState.x = joystickPos.x / joystickDraggableMax;
       state.joyStickState.y = joystickPos.y / joystickDraggableMax;
